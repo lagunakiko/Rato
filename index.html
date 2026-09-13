@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Rateio — divida contas com amigos</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1F3B32">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #E7E1CE;
+    --paper: #FBF8F0;
+    --ink: #2A281F;
+    --ink-soft: #706C5C;
+    --line: #DCD3B8;
+    --cover: #1F3B32;
+    --cover-light: #2C4F43;
+    --gold: #B9862F;
+    --gold-light: #E4C888;
+    --green: #2F6F4E;
+    --green-bg: #E4EFE5;
+    --red: #A9402F;
+    --red-bg: #F5E6E1;
+    --radius: 10px;
+    --shadow: 0 1px 0 rgba(0,0,0,0.04);
+  }
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(0,0,0,0.05) 1px, transparent 0);
+    background-size: 14px 14px;
+    color: var(--ink);
+    font-family: 'Work Sans', sans-serif;
+    display:flex;
+    justify-content:center;
+    min-height:100%;
+    padding: 24px 12px;
+  }
+  #phone{
+    width:100%;
+    max-width: 420px;
+    background: var(--paper);
+    border-radius: 22px;
+    overflow:hidden;
+    box-shadow: 0 20px 60px rgba(20,25,15,0.25), 0 0 0 8px #16281f;
+    min-height: 780px;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  .cover{
+    background: var(--cover);
+    color: #F4EFDD;
+    padding: 22px 20px 18px;
+    position:relative;
+  }
+  .cover h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: 26px;
+    margin:0;
+    letter-spacing: 0.2px;
+  }
+  .cover p{
+    margin: 4px 0 0;
+    color: #C9CBB6;
+    font-size: 13px;
+  }
+  .backbtn{
+    background:none;
+    border:none;
+    color:#F4EFDD;
+    font-family:'Work Sans',sans-serif;
+    font-size: 14px;
+    padding:0;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom: 10px;
+  }
+  .backbtn:hover{ opacity:0.85; }
+  .content{
+    flex:1;
+    overflow-y:auto;
+    padding: 18px 18px 90px;
+  }
+  .empty{
+    text-align:center;
+    padding: 60px 20px;
+    color: var(--ink-soft);
+  }
+  .empty .big{
+    font-family:'Fraunces', serif;
+    font-size: 19px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .group-card{
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    transition: border-color .15s ease, transform .1s ease;
+  }
+  .group-card:hover{ border-color:#b9ac82; }
+  .group-card:active{ transform: scale(0.99); }
+  .group-name{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size: 17px;
+  }
+  .group-meta{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .group-balance{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 14px;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .pos{ color: var(--green); }
+  .neg{ color: var(--red); }
+  .zero{ color: var(--ink-soft); }
+
+  button.primary{
+    background: var(--gold);
+    color: #2A2109;
+    border:none;
+    border-radius: var(--radius);
+    padding: 13px 18px;
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size: 14.5px;
+    cursor:pointer;
+    width:100%;
+  }
+  button.primary:hover{ background: var(--gold-light); }
+  button.primary:active{ transform: scale(0.99); }
+  button.ghost{
+    background:none;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-family:'Work Sans', sans-serif;
+    font-size: 13.5px;
+    cursor:pointer;
+  }
+  button.ghost:hover{ border-color:#b9ac82; }
+  .fab{
+    position:absolute;
+    bottom:20px;
+    left:18px;
+    right:18px;
+  }
+  input, select{
+    width:100%;
+    font-family:'Work Sans', sans-serif;
+    font-size: 14.5px;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  input:focus, select:focus{ outline: 2px solid var(--gold-light); border-color: var(--gold); }
+  label.field-label{
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    display:block;
+    margin-bottom: 6px;
+    margin-top: 2px;
+  }
+  .modal-overlay{
+    position:absolute;
+    inset:0;
+    background: rgba(20,20,15,0.45);
+    display:flex;
+    align-items:flex-end;
+    z-index: 20;
+  }
+  .modal-sheet{
+    background: var(--paper);
+    width:100%;
+    border-radius: 18px 18px 0 0;
+    padding: 20px 18px 22px;
+    max-height: 85%;
+    overflow-y:auto;
+  }
+  .modal-sheet h2{
+    font-family:'Fraunces', serif;
+    font-size: 19px;
+    font-weight:600;
+    margin: 0 0 14px;
+  }
+  .modal-actions{
+    display:flex;
+    gap:10px;
+    margin-top: 6px;
+  }
+  .modal-actions button{ flex:1; }
+  .tabs{
+    display:flex;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 14px;
+  }
+  .tab{
+    flex:1;
+    text-align:center;
+    padding: 10px 4px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    cursor:pointer;
+    border-bottom: 2px solid transparent;
+    font-weight:500;
+  }
+  .tab.active{
+    color: var(--cover);
+    border-bottom-color: var(--gold);
+  }
+  .member-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background: var(--green-bg);
+    color: #1F4A34;
+    padding: 6px 11px;
+    border-radius: 999px;
+    font-size: 13px;
+    margin: 0 6px 6px 0;
+  }
+  .member-chip button{
+    background:none;
+    border:none;
+    color:#1F4A34;
+    cursor:pointer;
+    font-size: 13px;
+    padding:0;
+    line-height:1;
+    opacity:0.6;
+  }
+  .member-chip button:hover{ opacity:1; }
+  .expense-row{
+    border-bottom: 1px dashed var(--line);
+    padding: 12px 0;
+    display:flex;
+    justify-content:space-between;
+    gap: 10px;
+  }
+  .expense-row:last-child{ border-bottom:none; }
+  .expense-desc{
+    font-weight:500;
+    font-size: 14.5px;
+  }
+  .expense-sub{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .expense-amt{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size: 14.5px;
+    white-space:nowrap;
+  }
+  .expense-del{
+    background:none;
+    border:none;
+    color: var(--ink-soft);
+    cursor:pointer;
+    font-size: 12px;
+    padding: 2px 0 0;
+  }
+  .expense-del:hover{ color: var(--red); }
+  .check-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .check-row:last-child{ border-bottom:none; }
+  .check-row input[type=checkbox]{
+    width:auto;
+    margin:0;
+  }
+  .check-row .custom-amt{
+    width: 90px;
+    margin:0;
+    padding: 6px 8px;
+    text-align:right;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .split-toggle{
+    display:flex;
+    gap:8px;
+    margin-bottom: 14px;
+  }
+  .split-toggle button{
+    flex:1;
+    padding: 9px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font-size: 13px;
+    cursor:pointer;
+    color: var(--ink-soft);
+  }
+  .split-toggle button.active{
+    background: var(--cover);
+    border-color: var(--cover);
+    color: #F4EFDD;
+    font-weight:500;
+  }
+  .settle-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    font-size: 13.5px;
+  }
+  .settle-arrow{ color: var(--ink-soft); margin: 0 8px; }
+  .settle-amt{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+  }
+  .balance-line{
+    display:flex;
+    justify-content:space-between;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .balance-line:last-child{ border-bottom:none; }
+  .error-text{
+    color: var(--red);
+    font-size: 12.5px;
+    margin: -6px 0 12px;
+  }
+  .section-title{
+    font-size: 12.5px;
+    text-transform: none;
+    color: var(--ink-soft);
+    margin: 0 0 8px;
+    font-weight:600;
+  }
+  .footnote{
+    text-align:center;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    padding: 10px 18px 4px;
+  }
+  .footnote button{
+    background:none;
+    border:none;
+    color: var(--ink-soft);
+    text-decoration:underline;
+    cursor:pointer;
+    font-size: 11.5px;
+    padding:0;
+  }
+</style>
+</head>
+<body>
+<div id="phone">
+  <div id="header" class="cover"></div>
+  <div id="content" class="content"></div>
+</div>
+
+<script>
+let state = { groups: [] };
+let currentGroupId = null;
+let currentTab = 'despesas';
+let modal = null;
+let storageReady = false;
+
+function uid(){ return Math.random().toString(36).slice(2,9); }
+function fmt(n){
+  const v = Math.round((n + Number.EPSILON) * 100) / 100;
+  return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+async function loadState(){
+  try{
+    const res = await window.storage.get('rateio-data', false);
+    if(res && res.value){ state = JSON.parse(res.value); }
+  }catch(e){ }
+  storageReady = true;
+  render();
+}
+async function saveState(){
+  try{
+    await window.storage.set('rateio-data', JSON.stringify(state), false);
+  }catch(e){ console.error('Falha ao salvar', e); }
+}
+
+function getGroup(id){ return state.groups.find(g => g.id === id); }
+
+function computeBalances(group){
+  const balances = {};
+  group.members.forEach(m => balances[m.id] = 0);
+  group.expenses.forEach(exp => {
+    balances[exp.paidBy] = (balances[exp.paidBy] || 0) + exp.amount;
+    exp.splits.forEach(s => {
+      balances[s.memberId] = (balances[s.memberId] || 0) - s.share;
+    });
+  });
+  return balances;
+}
+
+function simplifySettlements(balances){
+  const debtors = [];
+  const creditors = [];
+  Object.entries(balances).forEach(([id, val]) => {
+    if(val < -0.005) debtors.push([id, val]);
+    else if(val > 0.005) creditors.push([id, val]);
+  });
+  debtors.sort((a,b)=>a[1]-b[1]);
+  creditors.sort((a,b)=>b[1]-a[1]);
+  const result = [];
+  let i=0, j=0;
+  while(i < debtors.length && j < creditors.length){
+    const amt = Math.min(-debtors[i][1], creditors[j][1]);
+    result.push({ from: debtors[i][0], to: creditors[j][0], amount: amt });
+    debtors[i][1] += amt;
+    creditors[j][1] -= amt;
+    if(Math.abs(debtors[i][1]) < 0.005) i++;
+    if(Math.abs(creditors[j][1]) < 0.005) j++;
+  }
+  return result;
+}
+
+function memberName(group, id){
+  const m = group.members.find(m => m.id === id);
+  return m ? m.name : '?';
+}
+
+function render(){
+  const existingOverlay = document.getElementById('modalOverlay');
+  if(existingOverlay) existingOverlay.remove();
+
+  const header = document.getElementById('header');
+  const content = document.getElementById('content');
+  content.innerHTML = '';
+
+  if(!storageReady){
+    header.innerHTML = `<h1>Rateio</h1><p>Carregando...</p>`;
+    return;
+  }
+
+  if(!currentGroupId){
+    header.innerHTML = `<h1>Rateio</h1><p>Suas contas com os amigos, em um só lugar</p>`;
+    renderGroupsList(content);
+  } else {
+    const group = getGroup(currentGroupId);
+    if(!group){ currentGroupId = null; render(); return; }
+    header.innerHTML = `
+      <button class="backbtn" id="backBtn">&larr; Todos os grupos</button>
+      <h1>${escapeHtml(group.name)}</h1>
+      <p>${group.members.length} pessoa${group.members.length===1?'':'s'}</p>
+    `;
+    document.getElementById('backBtn').onclick = () => { currentGroupId = null; render(); };
+    renderGroupDetail(content, group);
+  }
+
+  if(modal) renderModal(modal);
+}
+
+function renderGroupsList(content){
+  if(state.groups.length === 0){
+    content.innerHTML = `
+      <div class="empty">
+        <div class="big">Nenhum grupo ainda</div>
+        <div>Crie um grupo para começar a dividir contas com seus amigos.</div>
+      </div>
+      <button class="primary" id="newGroupBtn">Criar grupo</button>
+    `;
+  } else {
+    let html = '';
+    state.groups.forEach(g => {
+      const balances = computeBalances(g);
+      const total = Object.values(balances).reduce((a,b)=>a+Math.max(b,0),0);
+      html += `
+        <div class="group-card" data-id="${g.id}">
+          <div>
+            <div class="group-name">${escapeHtml(g.name)}</div>
+            <div class="group-meta">${g.members.length} pessoa${g.members.length===1?'':'s'} · ${g.expenses.length} despesa${g.expenses.length===1?'':'s'}</div>
+          </div>
+          <div class="group-balance ${total > 0.005 ? 'pos' : 'zero'}">${total > 0.005 ? fmt(total)+' no total' : 'quitado'}</div>
+        </div>
+      `;
+    });
+    html += `<button class="primary" id="newGroupBtn" style="margin-top:8px;">Criar novo grupo</button>`;
+    content.innerHTML = html;
+    content.querySelectorAll('.group-card').forEach(el => {
+      el.onclick = () => { currentGroupId = el.dataset.id; currentTab='despesas'; render(); };
+    });
+  }
+  document.getElementById('newGroupBtn').onclick = () => { modal = { type: 'newGroup' }; render(); };
+}
+
+function renderGroupDetail(content, group){
+  let html = `
+    <div class="tabs">
+      <div class="tab ${currentTab==='despesas'?'active':''}" data-tab="despesas">Despesas</div>
+      <div class="tab ${currentTab==='membros'?'active':''}" data-tab="membros">Membros</div>
+      <div class="tab ${currentTab==='saldos'?'active':''}" data-tab="saldos">Saldos</div>
+    </div>
+  `;
+
+  if(currentTab === 'membros'){
+    html += `<div class="section-title">Quem faz parte deste grupo</div>`;
+    if(group.members.length === 0){
+      html += `<div class="empty"><div class="big">Sem membros</div><div>Adicione as pessoas que vão dividir as contas.</div></div>`;
+    } else {
+      html += `<div style="margin-bottom:16px;">`;
+      group.members.forEach(m => {
+        html += `<span class="member-chip">${escapeHtml(m.name)} <button data-remove-member="${m.id}">&times;</button></span>`;
+      });
+      html += `</div>`;
+    }
+    html += `<button class="primary" id="addMemberBtn">Adicionar pessoa</button>`;
+  }
+
+  if(currentTab === 'despesas'){
+    html += `<div class="section-title">Histórico de despesas</div>`;
+    if(group.expenses.length === 0){
+      html += `<div class="empty"><div class="big">Nenhuma despesa</div><div>Registre a primeira conta do grupo.</div></div>`;
+    } else {
+      html += `<div style="margin-bottom:16px;">`;
+      [...group.expenses].reverse().forEach(exp => {
+        html += `
+          <div class="expense-row">
+            <div>
+              <div class="expense-desc">${escapeHtml(exp.desc)}</div>
+              <div class="expense-sub">pago por ${escapeHtml(memberName(group, exp.paidBy))} · dividido entre ${exp.splits.length}</div>
+              <button class="expense-del" data-del-expense="${exp.id}">excluir</button>
+            </div>
+            <div class="expense-amt">${fmt(exp.amount)}</div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    }
+    if(group.members.length >= 1){
+      html += `<button class="primary" id="addExpenseBtn">Adicionar despesa</button>`;
+    } else {
+      html += `<div class="empty" style="padding:20px;"><div>Adicione pessoas ao grupo antes de lançar despesas.</div></div>`;
+    }
+  }
+
+  if(currentTab === 'saldos'){
+    const balances = computeBalances(group);
+    html += `<div class="section-title">Saldo de cada pessoa</div>`;
+    html += `<div style="background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding: 4px 14px; margin-bottom:20px;">`;
+    if(group.members.length === 0){
+      html += `<div class="balance-line"><span>Sem membros ainda</span></div>`;
+    }
+    group.members.forEach(m => {
+      const v = balances[m.id] || 0;
+      let label, cls;
+      if(v > 0.005){ label = 'recebe ' + fmt(v); cls='pos'; }
+      else if(v < -0.005){ label = 'deve ' + fmt(-v); cls='neg'; }
+      else { label = 'quitado'; cls='zero'; }
+      html += `<div class="balance-line"><span>${escapeHtml(m.name)}</span><span class="${cls}">${label}</span></div>`;
+    });
+    html += `</div>`;
+
+    const settlements = simplifySettlements(balances);
+    html += `<div class="section-title">Como acertar as contas</div>`;
+    if(settlements.length === 0){
+      html += `<div class="empty" style="padding:20px;"><div class="big">Tudo certo</div><div>Ninguém deve nada no momento.</div></div>`;
+    } else {
+      settlements.forEach(s => {
+        html += `
+          <div class="settle-row">
+            <span>${escapeHtml(memberName(group, s.from))}</span>
+            <span class="settle-arrow">paga para</span>
+            <span>${escapeHtml(memberName(group, s.to))}</span>
+            <span class="settle-amt">${fmt(s.amount)}</span>
+          </div>
+        `;
+      });
+    }
+  }
+
+  content.innerHTML = html;
+
+  content.querySelectorAll('.tab').forEach(el => {
+    el.onclick = () => { currentTab = el.dataset.tab; render(); };
+  });
+  const addMemberBtn = document.getElementById('addMemberBtn');
+  if(addMemberBtn) addMemberBtn.onclick = () => { modal = { type: 'newMember' }; render(); };
+  const addExpenseBtn = document.getElementById('addExpenseBtn');
+  if(addExpenseBtn) addExpenseBtn.onclick = () => {
+    modal = { type: 'newExpense', splitType: 'equal', selected: group.members.map(m=>m.id), custom: {} };
+    render();
+  };
+  content.querySelectorAll('[data-remove-member]').forEach(el => {
+    el.onclick = () => {
+      const id = el.dataset.removeMember;
+      group.members = group.members.filter(m => m.id !== id);
+      group.expenses.forEach(e => { e.splits = e.splits.filter(s => s.memberId !== id); });
+      saveState(); render();
+    };
+  });
+  content.querySelectorAll('[data-del-expense]').forEach(el => {
+    el.onclick = () => {
+      const id = el.dataset.delExpense;
+      group.expenses = group.expenses.filter(e => e.id !== id);
+      saveState(); render();
+    };
+  });
+}
+
+function renderModal(m){
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'modalOverlay';
+  const sheet = document.createElement('div');
+  sheet.className = 'modal-sheet';
+  overlay.appendChild(sheet);
+  document.getElementById('phone').appendChild(overlay);
+  overlay.addEventListener('click', (e) => { if(e.target === overlay){ modal = null; render(); } });
+
+  if(m.type === 'newGroup'){
+    sheet.innerHTML = `
+      <h2>Novo grupo</h2>
+      <label class="field-label">Nome do grupo</label>
+      <input id="groupNameInput" placeholder="Viagem à praia, República, etc." autofocus>
+      <div id="groupError" class="error-text" style="display:none;">Digite um nome para o grupo.</div>
+      <div class="modal-actions">
+        <button class="ghost" id="cancelBtn">Cancelar</button>
+        <button class="primary" id="saveBtn">Criar grupo</button>
+      </div>
+    `;
+    sheet.querySelector('#cancelBtn').onclick = () => { modal = null; render(); };
+    sheet.querySelector('#saveBtn').onclick = () => {
+      const name = sheet.querySelector('#groupNameInput').value.trim();
+      if(!name){ sheet.querySelector('#groupError').style.display = 'block'; return; }
+      const g = { id: uid(), name, members: [], expenses: [] };
+      state.groups.push(g);
+      currentGroupId = g.id;
+      currentTab = 'membros';
+      modal = null;
+      saveState(); render();
+    };
+  }
+
+  if(m.type === 'newMember'){
+    const group = getGroup(currentGroupId);
+    sheet.innerHTML = `
+      <h2>Adicionar pessoa</h2>
+      <label class="field-label">Nome</label>
+      <input id="memberNameInput" placeholder="Nome do amigo" autofocus>
+      <div id="memberError" class="error-text" style="display:none;">Digite um nome.</div>
+      <div class="modal-actions">
+        <button class="ghost" id="cancelBtn">Cancelar</button>
+        <button class="primary" id="saveBtn">Adicionar</button>
+      </div>
+    `;
+    sheet.querySelector('#cancelBtn').onclick = () => { modal = null; render(); };
+    sheet.querySelector('#saveBtn').onclick = () => {
+      const name = sheet.querySelector('#memberNameInput').value.trim();
+      if(!name){ sheet.querySelector('#memberError').style.display = 'block'; return; }
+      group.members.push({ id: uid(), name });
+      modal = null;
+      saveState(); render();
+    };
+  }
+
+  if(m.type === 'newExpense'){
+    const group = getGroup(currentGroupId);
+    let payerOptions = group.members.map(mm => `<option value="${mm.id}">${escapeHtml(mm.name)}</option>`).join('');
+    sheet.innerHTML = `
+      <h2>Nova despesa</h2>
+      <label class="field-label">Descrição</label>
+      <input id="descInput" placeholder="Jantar, Uber, mercado...">
+      <label class="field-label">Valor total</label>
+      <input id="amountInput" type="number" step="0.01" min="0" placeholder="0,00">
+      <label class="field-label">Quem pagou</label>
+      <select id="paidBySelect">${payerOptions}</select>
+      <label class="field-label">Como dividir</label>
+      <div class="split-toggle">
+        <button data-split="equal" class="${m.splitType==='equal'?'active':''}">Igualmente</button>
+        <button data-split="custom" class="${m.splitType==='custom'?'active':''}">Valores diferentes</button>
+      </div>
+      <div id="participantsBox"></div>
+      <div id="expenseError" class="error-text" style="display:none;"></div>
+      <div class="modal-actions">
+        <button class="ghost" id="cancelBtn">Cancelar</button>
+        <button class="primary" id="saveBtn">Adicionar despesa</button>
+      </div>
+    `;
+    function renderParticipants(){
+      const box = sheet.querySelector('#participantsBox');
+      let html = `<label class="field-label">Entre quem</label>`;
+      group.members.forEach(mm => {
+        const checked = m.selected.includes(mm.id) ? 'checked' : '';
+        const customVal = m.custom[mm.id] !== undefined ? m.custom[mm.id] : '';
+        html += `
+          <div class="check-row">
+            <label style="display:flex;align-items:center;gap:8px;flex:1;">
+              <input type="checkbox" data-participant="${mm.id}" ${checked}>
+              ${escapeHtml(mm.name)}
+            </label>
+            ${m.splitType==='custom' ? `<input class="custom-amt" type="number" step="0.01" min="0" data-custom="${mm.id}" value="${customVal}" placeholder="0,00">` : ''}
+          </div>
+        `;
+      });
+      box.innerHTML = html;
+      box.querySelectorAll('[data-participant]').forEach(el => {
+        el.onchange = () => {
+          const id = el.dataset.participant;
+          if(el.checked){ if(!m.selected.includes(id)) m.selected.push(id); }
+          else { m.selected = m.selected.filter(x => x !== id); delete m.custom[id]; }
+          renderParticipants();
+        };
+      });
+      box.querySelectorAll('[data-custom]').forEach(el => {
+        el.oninput = () => { m.custom[el.dataset.custom] = el.value; };
+      });
+    }
+    renderParticipants();
+
+    sheet.querySelectorAll('[data-split]').forEach(btn => {
+      btn.onclick = () => {
+        m.splitType = btn.dataset.split;
+        sheet.querySelectorAll('[data-split]').forEach(b => b.classList.toggle('active', b===btn));
+        renderParticipants();
+      };
+    });
+
+    sheet.querySelector('#cancelBtn').onclick = () => { modal = null; render(); };
+    sheet.querySelector('#saveBtn').onclick = () => {
+      const errBox = sheet.querySelector('#expenseError');
+      errBox.style.display = 'none';
+      const desc = sheet.querySelector('#descInput').value.trim();
+      const amount = parseFloat(sheet.querySelector('#amountInput').value);
+      const paidBy = sheet.querySelector('#paidBySelect').value;
+
+      if(!desc){ errBox.textContent = 'Digite uma descrição.'; errBox.style.display='block'; return; }
+      if(!amount || amount <= 0){ errBox.textContent = 'Digite um valor válido.'; errBox.style.display='block'; return; }
+      if(m.selected.length === 0){ errBox.textContent = 'Selecione ao menos uma pessoa para dividir.'; errBox.style.display='block'; return; }
+
+      let splits = [];
+      if(m.splitType === 'equal'){
+        const base = Math.floor((amount / m.selected.length) * 100) / 100;
+        let remainder = Math.round((amount - base * m.selected.length) * 100);
+        m.selected.forEach((id, idx) => {
+          let share = base;
+          if(remainder > 0){ share = Math.round((share + 0.01) * 100) / 100; remainder--; }
+          splits.push({ memberId: id, share });
+        });
+      } else {
+        let sum = 0;
+        let valid = true;
+        m.selected.forEach(id => {
+          const v = parseFloat(m.custom[id]);
+          if(isNaN(v) || v < 0) valid = false;
+          sum += isNaN(v) ? 0 : v;
+        });
+        if(!valid){ errBox.textContent = 'Preencha um valor válido para cada pessoa.'; errBox.style.display='block'; return; }
+        if(Math.abs(sum - amount) > 0.02){ errBox.textContent = `A soma dos valores (${fmt(sum)}) precisa bater com o total (${fmt(amount)}).`; errBox.style.display='block'; return; }
+        m.selected.forEach(id => splits.push({ memberId: id, share: parseFloat(m.custom[id]) }));
+      }
+
+      group.expenses.push({ id: uid(), desc, amount, paidBy, splitType: m.splitType, splits });
+      modal = null;
+      saveState(); render();
+    };
+  }
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+loadState();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
